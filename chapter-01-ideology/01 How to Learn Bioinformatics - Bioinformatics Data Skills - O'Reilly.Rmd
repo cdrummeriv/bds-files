@@ -1,0 +1,19 @@
+---
+title: "01 How to Learn Bioinformatics - Bioinformatics Data Skills - O'Reilly"
+author: "Charles Drummer IV"
+date: "3/21/2022"
+output: html_document
+-“Part I. Ideology: Data Skills for Robust and Reproducible Bioinformatics”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+Supplementary files: https://github.com/vsbuffalo/bds-files
+- *data skills* - set of computational skills that give you the ability to quickly improvise a wa y of looking at ocmplex datasets, using a well-known setof tools
+- Document everything
+  - R script knitr <https://github.com/yihui/knitr> and Jupyter Notebook <https://docs.jupyter.org/en/latest/install.html>
+  
+Make figures and statistics the results of scripts

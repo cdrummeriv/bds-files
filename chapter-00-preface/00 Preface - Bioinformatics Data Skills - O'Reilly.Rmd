@@ -1,0 +1,151 @@
+---
+title: "00 Preface - Bioinformatics Data Skills - O'Reilly"
+author: "Charles Drummer IV"
+date: "3/21/2022"
+output: html_document
+---
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+Supplementary files: https://github.com/vsbuffalo/bds-files
+
+# “Assumptions This Book Makes”
+Basic assumptions and "beginner" level concepts required for this text.  
+
+Excerpt From
+UNIX and Perl to the Rescue!
+Keith Bradnam & Ian Korf
+https://books.apple.com/us/book/unix-and-perl-to-the-rescue/id811816169
+This material may be protected by copyright.
+
+## Difference between terminal and shell
+### The Unix Terminal
+- *terminal* - common name for a type of program that does two main things. 
+  - allows you to send typed instructions to the computer
+  - allows you to see the output that results
+  
+- *command prompt* - text including youre login name (or name of the macine) and traditionally followed by some kidn of punctuation character (usually $ or %)
+  - interpret a command prompt in documentaiton (example when you see $ ls) as type the unix command at the command prompt
+
+### The Unix Shell
+- *shell* - ta command-line interpreter that lets you interact with Unix
+  - Unix is the internet, terminal is a web browser (a program that lets you interact with the internet)
+  - a "shell" is a web browser (a variant of the default terminal program)
+  
+- Common Unix shells
+  - sh - Bourne shell; 
+  - csh - C shell, it quickly gave rise to a related shell called the TENEX shell or tcsh. The latter shell contains everything in csh plus some other useful features such as command-line completion. 
+  - ksh - Korn shell; includes many features of csh and is backwards compatible with sh.
+  - bash - Bourne-again shell; widely used and is currently the default shell on computers running Mac OS X. 
+  - zsh - sh.Z shell – known as zsh. This is the newest of all the shells mentioned so far, and is gaining in popularity. Incorporates various elements of all of the other shells that have gone before it, but it also includes new features such as spelling correction
+  
+- *environment variables (variables)* - special variables that are associated with your Unix account 
+  - always written in upper-case with a leading variable "$" (no spaces) to distinguish variables from file or directory names 
+    - $SHELL - variable for the user's default shell
+    - $ echo - command for displaying the content of any environment variable 
+  - including a environment variable as a apr tof a command will make Unix use the contents of the variable
+
+## Command-line basics
+- how to enter commands 
+
+- *command-line-options* - a command modifier that changes the defualt behabior of a command/ output of the command
+  - (-) - specifies a command-line option in Unix 
+  - preceed a function with "$ man" to few a "manual" of all option
+  - search all available commands for a particular term by "$ man -k keyword" where "keyword" is the term to serach for
+
+- *command-line flags*
+
+- *command-line arguments*
+
+
+## Unix file hierarchy
+*home directory* - the "root" directory that a new terminal session defaults to; at the command prompt, the home directory is simply denoted as "/"
+  *~usr* - shortcut for the current user's home directory; if navigating to you're home directory, you can drop the "usr"; running "$ cd" by iself will also return to the current users home directory
+
+relative versus absolute directories paths
+ - *relative path* - a directory that is horizontally related to your current directory
+ - *absolute path* - a directory that begins at the root level
+ 
+*root directories* - the folder/directory you are starting with; the folder/directories listed immeidately after the "root" directory are the top level folders/directories in that root
+  - .. - shortcut for the current "root" directory
+  - .. / .. - shortcut for the "root" directory above the current directory
+  
+when using multiple word names for directories/files in Unix, use underscores instead of spaces
+
+### Links in Unix file hierarchy
+In some cases you'll need to work in a relative path (for project portability) but need to reference material in another location.  Instead of using the absolute path for the referenced file, create a link to the reference materials in the project folder.  This preserves relative path navigation
+
+Links in Unix create connections between files. 2 types of Linux links
+- *hard links* - replicates an existing file in another location, both names refer to the same data object at the same disk location
+- *soft links* - creates an alias/ hyperlink in the new location that points back to the orignal file location.  There is only the orignal file, the soft link only points to the true data object
+
+The 'ln' command creates links
+- 'ln' default --> hard links
+- 'ln -s' option creates a symbolic (soft) link
+- 'ln' syntax
+	- 'ln -s <source_file> <symbolic_link>'
+```{creating a soft link}
+$ ln -s /lab_reference/sub_directory/ /home/usr/local_sub_directory
+
+```
+
+
+## Unix directory commands 
+$ cd - change directory
+
+$ ls - "list" sources, shows what's in the current directory
+  - to view another directory use "$ ls / *argument*" where "argument" is the directory of interest
+  - *subdirectory* - a directory that exists withing another directory
+
+$ pwd - "print working directory"; a command used to determine file path to your current directory
+
+$ mkdir - "make directory" at  in the current directory
+  - using the " -p" options allows you to make subdirectories in a single step 
+
+$ rmdir - "remove directory" at in the current directory
+
+$ mv - "move" file (argument 1) to directory (argument 2)
+```{Move files}
+# move earth.text to the "Temp" directory 
+mv earth.txt Temp/
+```
+  - to "rename" the file, add the new name to the directory (argument 2)
+    Example: $ mv rags Temp/riches
+```{rename file}
+# rename riches to rags
+mv riches rags
+```
+
+$ rm - "remove" file/directory.  PERMANENTLY
+
+$ cp - "copy: file (argument 1) to directory (argument 2)
+
+$ touch - updates the modification time of a file or creates a file if it doesn’t already exist
+
+$ xargs - "extended arguments"; used to build and execute command lines from standard input.  Command converts each item from input into arguments
+	- First seen: Kat's Cluster Training 3.  Used to auto-generate lines of command code to download fastq files from NCBI using SRA Tools
+	- Command Used: 'xargs -i{} echo "sbatch -J fastq_{} --wrap=\"fastq-dump --gzip --split-3 {}\"" > download.sh' 
+	- syntax: xargs [options] [command [initial-arguments]]
+		- option '-i{}': replace string, takes each line from input and replaces '{}' with input from string
+		- command 'echo': prints what was passed in.  Takes the following "sbatch..." and prints, replacing {} with input
+		- option '--wrap\<string_to_wrap>\<symbol_to_wrap_with>': wraps the string between '\\' with th symbol given at end
+		
+
+## Unix file ownership, permissions
+
+- chown
+
+- chmod
+
+
+## Regular expressions
+- Writing, testing, and debugging regular expressions:
+  - http://regex101.com
+  - http://www.debuggex.com
+  
+
+
+

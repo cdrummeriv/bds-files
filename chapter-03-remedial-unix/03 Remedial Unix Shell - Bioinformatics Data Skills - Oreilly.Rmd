@@ -1,0 +1,212 @@
+---
+title: 03 Remedial Unix Shell - Bioinformatics Data Skills - O'Reilly
+author: "Charles Drummer IV"
+date: "3/22/2022"
+output: html_document
+---
+“Part II. Prerequisites: Essential Skills for Getting Started with a Bioinformatics Project”
+
+“Chapter 3. Remedial Unix Shell”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+# Why do we use unix in bioinformatics? Modularity and the Unix Philosophy
+“This is the Unix philosophy: Write programs that do one thing and do it well. Write programs to work together. Write programs to handle text streams, because that is a universal interface. - Doug McIlory”
+
+# Working with Streams and Redirection
+A "stream" is an output of data usually directly to the terminal as "standard out".  A stream is not "saved" (faster than reading adn writing to disk)
+The 'cat' command 
+'cat' command - print content of file(s) to the terminal as "standard out"
+```{'cat' command to print files to standard out}
+$ cat tb1-protein.fasta tga1-protein.fasta
+>teosinte-branched-1 protein
+LGVPSVKHMFPFCDSSSPMDLPLYQQLQLSPSSPKTDQSSSFYCYPCSPP
+FAAADASFPLSYQIGSAAAADATPPQAVINSPDLPVQALMDHAPAPATEL
+GACASGAEGSGASLDRAAAAARKDRHSKICTAGGMRDRRMRLSLDVARKF
+FALQDMLGFDKASKTVQWLLNTSKSAIQEIMADDASSECVEDGSSSLSVD
+GKHNPAEQLGGGGDQKPKGNCRGEGKKPAKASKAAATPKPPRKSANNAHQ
+VPDKETRAKARERARERTKEKHRMRWVKLASAIDVEAAAASVPSDRPSSN
+NLSHHSSLSMNMPCAAA
+>teosinte-glume-architecture-1 protein
+DSDCALSLLSAPANSSGIDVSRMVRPTEHVPMAQQPVVPGLQFGSASWFP
+RPQASTGGSFVPSCPAAVEGEQQLNAVLGPNDSEVSMNYGGMFHVGGGSG
+GGEGSSDGGT
+```
+
+A "redirection" changes the "standard input" (from your keyboard) into the terminal or "standard output" (from your terminal window) 
+
+## Redirecting Standard Out to a File
+Standard Out (stdout) is the result of a program/command and is usually displayed in the terminal 
+
+Stdout can be redirected to a file using the '>' or '>>' operator
+	- '>' operator - writes stdout to file; overwrites if data already exists in file
+	- '>>' operator - appends stdout to file
+```{redirect stdout of two FASTA files to a single new file}
+$ cat tb1-protein.fasta tga1-protein.fasta > zea-proteins.fasta
+```
+## Redirecting Stand Error
+Standard Error (stderr) is a stream of errors, warnings and messages usually displayed in the terminal window
+
+Stdout and Stderr can be redirected separately
+
+Stderr redirected using '2>' to write to a .stderr file
+```{redirecting stderr for a missing leafy1.fasta file}
+$ ls -l tb1.fasta leafy1.fasta > listing.txt 2> listing.stderr
+$ cat listing.txt
+-rw-r--r--  1 vinceb  staff  152 Jan 20 21:24 tb1.fasta
+$ cat listing.stderr
+ls: leafy1.fasta: No such file or directory
+```
+
+## Using Standard Input Redictretion
+Stdin normally comes from your keyboard 
+```{Example standard input}
+# redicrecting input to "program" from "inputfile"
+$ program < inputfile
+
+# redirecting input to "program" from "inputfile" then redirecting output to outputfile
+$ program < inputfile > outputfile
+```
+
+More common for input redirects to come from pipes
+```{example standard input from pipe}
+# piping input to "program" then storing stdout to file
+$ inputfile | program > outputfile
+```
+
+# The almighty Unix pipe: speed and beatuy in one 
+Redirect operators (<, >, >>, 2>) redirect output stream to file(s)
+
+Pipe operators (|) redirect output stream to another program's standard input, standard output is piped to the next command, standard error is displayed
+	- Note: ending the parent process pipe line with "\" allows the child process code to be written on the next line for legibility
+```{example pipe line separation using "\"}
+
+“$ program1 input.txt | \   
+     program2 > results.txt
+```
+## Pipes in action: creating simple programs with grep and pipes
+'grep' - Unix tool that seraches files or stdin for strings that match patterns; patterns can be:
+	- simple strings 
+	- regular expressions
+	-Note: BE SURE to use double quotations when perfomring grep to ensure Unix doesn't interpret regular expression characters as Unix operators
+```{grep example to search and remove formatting then search and print non-nucleotide characters}
+# grep 1: finds lines that begin with ">" ('^>') in the file tb1.fasta. To exclude the ">", use '-v' option. Then pipe (|) stdout to next command 
+# grep 2: find characters that are NOT A,T,C or G ([^ATCG]). '-i' option ignores case.  '--color' option color matches non-nucleotide characters
+
+$ grep -v "^>" tb1.fasta | grep --color -i "[^ATCG]   
+CCCCAAAGACGGACCAATCCAGCAGCTTCTACTGCTAYCCATGCTCCCCTCCCTTCGCCGCCGCCGACGC”
+```
+
+## Combining pipes and redirection
+Aligners, assemblers etc often use multiple streams simultaneously
+```{example pipe of two programs with separate error logs}
+
+$ program1 input.txt 2> program1.stderr | program2 2> program2.stderr > results.txt ”
+```
+At times its necessary to output stderr to stdout (example. using 'grep' to search for errors)
+	- pipes won't work. pipes only pass stdout to stdin and ignore stderr
+	- the '2>&1' operator redirects stderr to stdout
+```{combining stderr and stadout for grep of errors}
+$ program1 2>&1 | grep "error"
+```
+
+## Even more redirection: a tee in your pipe
+intermediate fiels can be written to the disk while using pipes (usually for debugging)
+
+'tee' progregram diverts a copy of pipline's stdout to intermediate file while passing stream to stdout
+```{'tee' program example}
+$ program1 input.txt | tee intermediate-file.txt | program2 > results.txt”
+```
+
+# Managing and interacting with processes
+processes - a program running through the unix shell until they end (finish successfully or terminated by an error)
+
+Processes can be interacted with via the Unix shell
+
+## Background processes
+Normally, a program runs in the foreground when you press Enter
+
+To run programms in the background with the ampersand (&) suffix
+
+NOTE: CLOSING THE TERMINAL WILL TERMINATE ANY BACKGROUND PROCESSES RUNNING
+```{running process in background with "&"}
+# setting a process to run in the background
+$ program1 input.txt > results.txt &
+[1] 26577 # the "process ID (PID)
+
+# setting an existing foreground app to run in the backgorund 
+$ program1 input.txt > results.txt # forgot to append ampersand
+$ # enter control-z
+[1]+  Stopped                  program1 input.txt > results.txt
+$ bg %1
+[1]+ program1 input.txt > results.txt”
+
+# check on process with 'jobs' program.  number in "[]" is job ID
+$ jobs
+[1]+  Running       program1 input.txt > results.txt
+
+# using 'fg' to bring process to foreground
+$ fg %1
+program1 input.txt > results.txt
+```
+## Killing Processes
+Kill a command running in the foreground by entering "Control-C"
+
+Kill background processes by using 'fg' command, then "Control-C" to kill
+
+## Exit status: how to programmaticaly tell whether your command worked 
+A returned status of "0" indicates that the process has run to completion, non-zero returns indicate some error
+```{chekcing status wiith echo and shell variable $?}
+$ program1 input.txt > results.txt
+$ echo $?
+0
+```
+Exit statuses allow programmatic chaining of commands
+- run subsequent program if successful - runs commands sequentially. if the first command completes successfully; uses the '&&' operator
+- run subsequent program if unsucessful - runs commands sequentially if the first command is unsuccessfully completed; uses the '||' operator
+- run programs sequentially - runs commands sequentially regardless of previous programs success; uses the ';' operator
+
+```{run subsequent program based on exit code of first}
+# run program2 from intermediate file if program1 successful
+$ program1 input.txt > intermediate-results.txt && \ program2 intermediate-results.txt > results.txt
+
+# display error code if program1 unsuccessful
+$ program1 input.txt > intermediate-results.txt || \
+    echo "warning: an error occurred”
+	
+# run programs sequentially, regardless of exit status
+$ program1 input1.text; program2 input2.text
+```
+
+## Command Subsitution
+*command substitution* - a shell expansion that runs a unix command inline and returns the output as a string that can be used in another command
+	- imbedded command within '$()'
+```{command subsitution examples} 
+# print to stdout the number of FASTA entries (start with '>') 
+$ grep -c '^>' input.fasta # command to search with grep and count the regular expression for lines begining with '>'
+416
+
+# embedd above code in and print to stdout command using command substitution 
+$ echo "There are $(grep -c '^>' input.fasta) entries in the FASTA file."
+There are 416 entries in my FASTA file.
+
+# making directories appended with date using embedded 'date' command 
+$ mkdir results-$(date +%F)
+$ ls results-2022-03-24
+```
+
+'alias' command - a command that converts commonly used line of code to a command substitution
+	- Note: only use these for startup level commands, not project directory level commands
+```{example 'add alias'}
+# 'add alias' command for common directory structure
+$ alias mkpr="mkdir -p {data/seq,scripts,analysis}"
+
+# 'add alias' command for date expansion
+$ alias today="date +%F"
+
+
+	

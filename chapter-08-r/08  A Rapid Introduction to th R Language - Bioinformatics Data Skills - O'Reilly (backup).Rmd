@@ -1,0 +1,391 @@
+---
+title: "08  A Rapid Introduction to th R Language - Bioinformatics Data Skills - O'Reilly"
+author: "Charles Drummer IV"
+date: "3/31/2022"
+output: html_document
+---
+
+“Part III. Practice: Bioinformatics Data Skills”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+“Chapter 8. A Rapid Introduction to the R Language”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+R language is a data programming language yo ucan use to explore and  understand data in an  open-ended, highly interactive, iterative way
+
+R language allows for *exploratory data analysis (EDA)* 
+- EDA is an approach emphasizing understanding data and data limitations though interactive investigation rather tha n explicit statistical modeling
+
+EDA can  reveal patterns in bioinformatics data overlooked with statistical modeling or hypothesis testing approaches
+
+Chapter goal: teach EDA skills to give the freedom to explore and experiment with your data at any stage of analysis
+
+# Getting started with R and RStudio
+RStudio has a "Console" and a "Terminal" shell.  While R can be run in the Console, installing R in the terminal first allows for running R code in-line in the coding window
+```{installing R in terminal}
+$ brew install r
+```
+Developing code in R is back-and-forth between
+- writing code in a re-runnable script
+- exploring data interactively in the R interpreter
+
+The comprehensive R archive network (CRAN) is a collection of packages that extend R's functionality
+- packages can be installed directly within R with 'install.packages()' function
+```{installing ggplot2 with install.packages function in R}
+# 
+> install.packages("ggplot2")
+```
+# R language basics
+
+## Simple calculations in R, calling functions and getting help in R
+expression - a calculation or command enter into an R console
+evaluated expression - a result printed to console after pressing 'enter'
+
+Arithmetic operations follow basic order of operations; parenthesis often needed to indicate order of operations 
+```{white space and order of operations}
+> 3 + 4/2
+[1] 5
+> (3 + 4)/2
+[1] 3.5
+```
+Functions can be used to perform mathematics operations
+- functions take zero or more arguments, perform calculations and output a return value 
+- R functions copy arguments, do not modify arguments in place 
+
+Common mathematics functions in  R
+- exp(x): Exponential function [Example: exp(1), exp(2)]
+- log(x, base=exp(1)), log10(), log2(): Natural, base 10, and base 2 logarithms [Example: log(2), log10(100), log2(16)}
+- sqrt(x): Square root [Example: sqrt(2)]
+- sin(x), cos(x), tan(x), etc.: Trigonometric functions (see help(sin) for more) [Example: sin(pi)]
+- abs(x): Absolute value [Example: abs(-3)]
+- factorial(x): Factorial [Example: factorial(5)]
+- choose(n, k): Binomial coefficient [Example: choose(5, 3)]
+Note: Significant digits
+- R prints 7 signifcant digits by default
+- 'print()' function can be used to change sig fig
+```{mathematic functions and sig figs}
+# square root function
+>  sqrt(3.5)
+
+# squart root function with 10 sig fig
+> print(sqrt(3.5), digits = 10)
+```
+Returned values can ether be saved as variable or passed directly to another function as an argument 
+```{passing sqrt function into round function as  argument}
+# passing sqrt function returned value into the round function
+> round(sqrt(3.5))
+[1] 2
+
+# round to a specific decimal place by adding digit argument
+> round(sqrt(3.5), digits=3)
+[1] 1.871
+> round(sqrt(3.5), 3)
+[1] 1.871
+```
+## Variables and assignment
+variable - a character or string that holds a value, assigned using '<-' assignment operator (Note: '=' can also be used to assign value to variable)
+```{Assign value to variable x}
+# assign value to variable x
+> x <- 3.1
+
+# retrieve value by entering variable into console
+> x
+3.1
+
+# variables can be used in mathematics  expressions 
+> (x + 2)/2
+[1] 2.55
+> exp(x)
+[1] 22.1979513
+> y <- exp(2*x) - 1
+> y
+[1] 491.749041
+```
+Values set to variables are assigned to an *environment* know the *global environment*
+'ls()' function prints all asigned variable in global environment
+```{print variables in environment}
+> ls()
+[1] "x"
+```
+# Vectors, vectorization and indexing
+- *vector* - a container of contiguous data
+  - vector of length 1 holds a single value
+  - 'length()' function returns the length of a vector
+```{vector length}
+> length(3.1)
+```
+  - create longer vectors with 'c()' function
+```{creating vector and storing in variable}
+> x <- c(56, 95.3, 0.4)
+> x
+[1] 56.0 95.3  0.4
+> y <- c(3.2, 1.1, 0.2)
+> y
+[1] 3.2 1.1 0.2
+```
+  - vectors can contain both variable-value pairs
+```{vectors with values and variable  pairs}
+> b <- c(a=3.4, b=5.4, c=0.4)
+> b
+  a   b   c
+3.4 5.4 0.4
+
+# variables can be called from vector
+> names(b)
+[1] "a" "b" "c"
+
+
+```
+- *vectorization* - process allowing for loop over vectors elementwise without needing to write an explicit loop
+```{Vectorization and variable operations}
+# store vector in x
+ > x <- c(56, 95.3, 0.4)
+
+# store vector in  y
+> y <- c(3.2, 1.1, 0.2)
+
+# Operations based on  values in corresponding vector positions in x and y
+> x + y
+[1] 59.2 96.4  0.6
+> x - y
+[1] 52.8 94.2  0.2
+> x/y
+[1] 17.50000 86.63636  2.00000
+
+```
+integer sequences function 'seq()' prints sequence between arguments
+```{Seq function}
+> seq(3, 5)
+[1] 3 4 5
+> 1:5
+[1] 1 2 3 4 5
+```
+- *recycling* - vector operations performed when one vector is shorter than  the other, shorter vector applied  
+-  allows for the addition  of a single value  to all elements in a  longer vector
+```{Recycling vector operations}
+> x
+[1] 56.0 95.3  0.4
+> x - 3
+[1] 53.0 92.3 -2.6
+> x / 2
+[1] 28.00 47.65  0.20
+> sqrt(x)
+[1] 7.4833148 9.7621719 0.6324555
+> round(sqrt(x), 3)
+[1] 7.483 9.762 0.632
+> log(x)/2 + 1 # note how we can combined vectorized operations
+[1] 3.0126758 3.2785149 0.5418546
+```
+- recycling requires smaller group to be a multiple of the larget one
+```{recylcing vectors with non-multiple vectors}
+> c(1, 2) + c(0, 0, 0, 0) 
+[1] 1 2 1 2
+> c(1, 2) + c(0, 0, 0) 
+[1] 1 2 1
+Warning message:
+In c(1, 2) + c(0, 0, 0) :
+  longer object length is not a multiple of shorter object length
+```
+- *indexing* - accessing specific elements of a vector; an index is the integer that specifies  which element in the vector to retrieve
+```{retrieving indexed vector elements}
+# retrieving indexes from a vector
+> x <- c(56, 95.3, 0.4)
+> x[2] 
+[1] 95.3
+> x[1]
+[1] 56
+> x[4] 
+[1] NA
+
+# resigning an index in a vector
+> x[3] <- 0.5 
+> x
+[1] 56.0 95.3  0.5
+
+# names can be reset in place
+> names(b) <- c("x", "y", "z")
+> b
+  x   y   z
+3.4 5.4 0.4
+
+# value-variable pairs can be retrieve from index
+> b['x']
+  x
+3.4
+> b['z']
+  z
+0.4
+```
+Vectors can be written to include certain values only or to exclude certain values
+```{including or excluding values in a vector}
+# extract indices 3-5 from vector z
+> z <- c(3.4, 2.2, 0.4, -0.4, 1.2)
+> z[3:5] # extract third, fourth, and fifth elements
+[1]  0.4 -0.4  1.2
+
+# exclude indices 4 and 5 from vector z
+> z[c(-4, -5)]   # exclude fourth and fifth elements
+[1] 3.4 2.2 0.4
+```
+Vectors can be reorganized based on indice number
+# reorder indices in vector z
+> z[c(3, 2, 4, 5, 1)]
+[1]  0.4  2.2 -0.4  1.2  3.4
+
+
+# reverse order in vector z
+> z[5:1]
+[1]  1.2 -0.4  0.4  2.2  3.4
+
+# reordering using 'order()' function
+> order(z)
+[1] 4 3 5 2 1
+> z[order(z)]
+[1] -0.4  0.4  1.2  2.2  3.4
+> order(z, decreasing=TRUE)
+[1] 1 2 5 3 4
+> z[order(z, decreasing=TRUE)]
+[1]  3.4  2.2  1.2  0.4 -0.4
+```
+
+Comparison operators ('==', '!=', '<', '<=', '>', '>=') can be used to build *logical vectors*
+
+R's comparison and logical operators
+- >: Greater than
+- <: Less than
+- >=: Greater than or equal to
+- <=: Less than or equal to
+- ==: Equal to
+- !: Not equal to
+- &: Elementwise logical AND
+- |: Elementwise logical OR
+- !: Elementwise logical NOT
+- &&: Logical AND (first element only, for if statements)
+- ||: Logical OR (first element only, for if statements)
+
+```{building logical vectors}
+# building logical vectors based on comparison operators
+> v <- c(2.3, 6, -3, 3.8, 2, -1.1)
+> v == 6
+[1] FALSE  TRUE FALSE FALSE FALSE FALSE
+> v <= -3
+[1] FALSE FALSE  TRUE FALSE FALSE FALSE
+> abs(v) > 5
+[1] FALSE  TRUE FALSE FALSE FALSE FALSE
+
+# creating subsets or larger vector based on comparison operators
+> v[v > 2]
+[1] 2.3 6.0 3.8
+```
+
+## Vector types
+Vectors in R must contain elements of the same type.  Supported data types:
+- Numeric (double vectors): includes real numbhers
+- Integers: whole numbers, positive or negative
+- Characters: strings in quotations
+- Logical: TRUE or FALSE
+- Complex: complex (imaginary) numbers
+- Raw: encodes raw bytes
+
+R will coerce values based on coercion rules to ensure all elements in a vector are the same type
+```{check the type of any object}
+> q <- c(2, 3.5, -1.1, 3.8)
+> typeof(q)
+[1] "double”
+```
+- logical values coerced into 0 or 1
+```{logical to numeric coercion}
+> c(4.3, TRUE, 2.1, FALSE)
+[1] 4.3 1.0 2.1 0.0
+```
+- interger values coerced into numeric
+```{interger to numeric coercion}
+# 'L' tag specifies a nmber as an integer
+> c(-9L, 3.4, 1.2, 3L)
+[1] -9.0  3.4  1.2  3.0
+```
+- if any value is a string, all values converted to string
+```{string coercion}
+> c(43L, TRUE, 3.2413341, "a string")
+[1] "43"        "TRUE"      "3.2413341" "a string"
+```
+
+## Factors and classes in R
+
+### Factors
+factor - a kind of vector storing categorical variables (treatment, strand, chromosome etc)
+
+Vectors can be convered to using 'factor()' function
+- 'factor()' function also outputs "levels" which are the total values for the categorical variable
+```{converting vectors to factors}
+> chr_hits <- c("chr2", "chr2", "chr3", "chrX", "chr2", "chr3", "chr3")
+> hits <- factor(chr_hits)
+# "printing" a factor gives the vector values and the total levels
+> hits
+[1] chr2 chr2 chr3 chrX chr2 chr3 chr3
+Levels: chr2 chr3 chrX
+
+# 'levels()' function gives just the levels for a factor
+> levels(hits)
+[1] "chr2" "chr3" "chrX"
+```
+
+All possible levels can be specified (in situations where some values may not be present but you want them to be saved as possible values)
+``` {defining levels}
+> hits <- factor(chr_hits, levels=c("chrX", "chrY", "chr2", "chr3", "chr4"))
+> hits
+[1] chr2 chr2 chr3 chrX chr2 chr3 chr3
+Levels: chrX chrY chr2 chr3 chr4
+```
+Existing levels in a factor can be renamed with 'levels()' 
+```{renaming levels using 'list' function}
+# 'hits' is already defined as a factor, we want to reset the possible levels using 'list'
+> levels(hits) <- list(chrX="chrX", chrY="chrY", chr2="chr2",
+                       chr3="chr3", chr4="chr4")
+> hits
+[1] chr2 chr2 chr3 chrX chr2 chr3 chr3
+Levels: chrX chrY chr2 chr3 chr4
+```
+
+### Classes
+class - endows an objecct with higher-level proterties that can affect how functions treat that object in R
+- Factors are simply integers assigned a level variable name
+```{assessing factor as integer values}
+> typeof(hits)
+[1] "integer"
+> as.integer(hits)
+[1] 3 3 4 1 3 4 4
+```
+
+Generic (*polymorphic*) functions  work on objects of all classes
+- 'table()' is a generic function.  Total number of each level can be determined using 'table()' function
+```{counting level in a factor}
+> table(hits)
+hits
+chrX chrY chr2 chr3 chr4
+   1    0    3    3    0
+```
+- 'summary()' is a genreic function that summarizes an object (i.e. vector) but its output depends on the class of values in the object
+```{summary function output for numeric vs factor values}
+> nums <- c(0.97, -0.7, 0.44, 0.25, -1.38, 0.08)
+# summary function on "numeric" class data
+> summary(nums)
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+-1.38000 -0.50500  0.16500 -0.05667  0.39250  0.97000
+# summary function on "factor" class data
+> summary(hits)
+chrX chrY chr2 chr3 chr4
+   1    0    3    3    0
+```
+
+# Working with and visualizing data in R

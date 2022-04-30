@@ -1,0 +1,198 @@
+---
+title: "09 Working with Range Data - Bioinformatics Data Skills - O'Reilly"
+author: "Charles Drummer IV"
+date: "4/13/2022"
+output: html_document
+---
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+Supplementary files: https://github.com/vsbuffalo/bds-files
+
+# A crash course in genomic ranges and coordinate systems
+*coordiante systems* arte used to desribe locations in a genome, described as a *range* on a linear choromosome sequence
+
+*ranges* - integer intervals that represent a subsequence of consecutive positions on a (chromosome) sequence
+- only specify a region
+
+*genomic range* (*genomic interval*) consist of 3 parts: chromosome name, range, strand
+- **Chromosome Name (or sequence name)**
+	- no standard, some state as "chr#", "#", "chrX", "Y", "MT" (mitochondrion), "HE#"" (scaffolds), "scaffold_#" (scaffolds)
+- **Range**
+	- specify a single subsequence on a chromosome region; composed of a start and end position
+- **Strand**
+	- forward (+) or reverse(-) DNA strand
+
+## Range
+Ranges specified in a reference genomes are **version specific**, new reference genome version can change the ranges
+
+Ranges are read based on the 5'-3' sequence: 
+- forward(+) strands are read based on the "top" foward strand left to right
+- reverse(-) strands are read based on the "bottom" reverse strand, right to left
+
+There are 2 types of range systems in bioinformatics: - *0-based* coordinate systems with *half closed, half open intervals*
+	- first base in a sequence is at position 0, the last base's position = the legnth of the sequence - 1
+	- half closed half open written "[start, end)"
+		- brakets: indicates that a position is  *included* in the range (also known as "closed on this end")
+		- parenthesis: indicates that a position is *excluded* in the range (interval is "open on this end")
+- *1-based* coordinate systems with *closed intervals*
+	- first base in sequence is at position 1, the last base's position = length of the sequence
+	- closed intervals written "[start, stop]"
+	
+*range width* - the number of bases a range spans; calculated based on 0- o 1-base
+- 0-base: 'end - start'
+	- Note: 0-base systems allow for widths of 0
+	- Useful for representing features "between" bases (i.e. restriction enzyme cut sights)
+- 1-base" 'end - start + 1'
+	- Note: 1-base systems lowester possible width is 1
+	
+Range of common bioinformatic formats
+- BED: 0-based
+- GTF: 1-based
+- GFF: 1-based
+- SAM: 1-based
+- BAM: 0-based
+- BLAST: 1-based
+- GenomicRanges: 1-based
+- Genebank/EMBL Feature Tables: 1-based
+
+## Strand
+Most range formats (except BLAST) specify range cooridinates *on the forward strand* of the reference sequence 
+- mRNA transcripts for forward strand read same as the reference sequence
+- mRNA transcripts for reverse strand read same as the REVERSE COMPLEMENT to the reference sequence
+
+Strand matters in RNAseq aligned reads
+
+# An interactive introduction to range data with GenomicRanges
+
+## Installing and working with Bioconductor packages
+*bioconductor* - an open sorce software project that creates R bioinformatitcs packages and serves as as repository for them.  Common packages:
+- GenomicRanges: used to represent and work with genomic ranges
+- GenomicFeatures: used to represent and work with ranges that represent gene models and other features of a genome (genes, exons, UTRs, transcripts etc)
+- Biostrings and BSgenome: used for manipulating sequence data in R
+- rtracklayer: used for reading in comnmon bioinformatic formats (BED, GTF/GFF)
+
+Bioconductor packages are installed using 'biocLite()' function
+```{installing bioconductor}
+# installing bioconductor
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(version = "3.14")
+# install core packages
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install()
+# install specific package
+BiocManager::install("AnnotationDbi")
+# install multiple packages at once
+BiocManager::install(c("GenomicFeatures", "GenomicRanges", "GenomicFeatures", "Biostrings", "BSgenome", "rtracklayer"))
+```
+## Storing generic ranges with IRanges
+IRange is package that creates 'IRange objects' with two basic (start, end)
+```{loading IRanges and creating an object}
+> library(IRanges)
+> rng <- IRanges(start=4,end=13)
+# create ranges by specifying width with start or end positoin
+> IRanges(start=4,width=3)
+> IRanges(end=5,width=5)
+# using vectors to generate multiple ranges
+> x<-IRanges(start=c(4,7,2,20), end=c(13,7,5,23))
+# start, end and width positions can be called 
+> start(x)
+> end(x)
+> width(x)
+> range(x)
+# positions can be reset with the <- operator
+> end(x) <-end(x)+4
+# range information can be subset
+> x[2:3]
+> x[start(x) < 5]
+> x[width(x) > 8]
+> x['a']
+# ranges can be merged
+> a<-IRanges(start=7,width=4)
+> b<-IRanges(start=2,end=5)
+> c(a,b)
+```
+
+## Basic range operations: arithmetic transformations and set operations
+IRange objects can be airithmeticaly transformed 
+- "+", "-" and * for multiplication
+
+Growing/adding to a range useful for creating buffer regions 
+```{adding up and down stream regions to range}
+> x<-IRange(start=c(40,80),end=c(67,114))
+> x+4L
+> x-10L
+```
+
+Multiplying by a positive integer "zooms in" (making a range narrower).  
+Multiplying by a negative integer "zooms out" (making a range wider).  
+
+You can restrict ranges to within a cetain bound
+```{restricting range}
+> y<-IRanges(start=c(4,6,10,12), width=13)
+> y
+> restrict(y,5,10)
+```
+
+You can obtain info on sequences outside of a set bound (flanking) to view up stream 
+```{flanking ranges}
+# upstream flanking
+> x 
+> flank(x,width=7) # by default, 'flank()' creates ranges of spedified width positions upstream of the specified ranges
+> flank(x,width=7, start=FALSE) # finds downstream flank
+```
+
+Reducing regions to convert overlapping ranges into a signle range covering sequences within that total range.  Useful when 
+```{reducing a range}
+> set.seed(0) # set the random number generator seed
+> alns<-IRanges(start=sample(seq_len(50,20), width=5))
+> head(alns,4)
+```
+
+Gaps function returns the gaps between reduced ranges
+```{gaps function}
+> gaps(alns)
+```
+
+Other comparisons:
+- 'intersect(a,b)' - shows only the part of ranges that overlap
+- 'setdiff(a,b)' - shows portion of  'a' that isn't intersect with 'b'
+- 'setdiff(b,a)' - shows portion of  'b' that isn't intersect with 'a'
+
+## Finding overlapping ranges
+
+## Finding nearestrange and calculating distance 
+
+## Run length encloding and views
+
+### Run-length encoding and coverage()
+
+### Going from run-length encoded sequences to ranges with slice()
+### Advanced IRanges: Views
+
+## Storing genomic ranges with GenomicRanges
+GenomicRanges extends IRanges
+- IRange object basics apply to GRange objects
+	- IRange objects: used to store ranges of genomic regions on a single sequence
+	- GRange objects: same as IRange but includes sequence name (chr) and strand information
+- GRange objects also contain metadata columns (holds data linked to each genomnic range)
+
+Creating GRange objects:
+```{loading GenomicRanges and creating GRange objects}
+> library(GenomicRanges)
+> gr<-GRanges(seqname=c("chr1", "chr1", "chr2", "chr3"), ranges=IRanges(start=5:8, width=10),strand=c("+", "-", "-", "+"))
+```
+
+## Grouping data with GRangesList
+
+## Working with Annotation Data: GenomnicFeatures and rtracklayer
+... (skipped ahead) ...
+
+'rtracklayer' package includes functions for im/exporting range data from common format (GTF/GFF,BED,BED Graph)
+- converts to 'GRanges' objects, handles technicalities (ex missing values, assigning columns in the f ile to metadata columns)
+

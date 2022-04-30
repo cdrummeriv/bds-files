@@ -1,0 +1,21 @@
+---
+title: Respublica RStudio Instance on CHOP
+author: "Charles Drummer IV"
+date: "4/6/2022"
+output: html_document
+---
+
+Open Terminal on your RedHat Linux virtual machine
+
+Load 'Firefox' browser module
+```{loading and launching Firefox}
+$ module load firefox
+$ firefox
+```
+
+Login to [Respublica OnDemand]<respublica-web.research.chop.edu>, select 'Interactive Apps' then 'RStudio'
+
+Select the version, hours and computational power needed
+Note: select a version of R instead of "current version".  When new versions are selected, all modules/packages have to be re-installed.
+
+The page will refresh and give a "Connect to RStudio Server" option and open in Firefox.

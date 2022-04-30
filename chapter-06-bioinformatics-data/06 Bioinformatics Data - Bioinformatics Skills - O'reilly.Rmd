@@ -1,0 +1,235 @@
+---
+title: 06 Git for Scientists - Bioinformatics Data Skills - O'Reilly
+author: "Charles Drummer IV"
+date: "3/28/2022"
+output: html_document
+---
+“Part II. Prerequisites: Essential Skills for Getting Started with a Bioinformatics Project”
+
+“Chapter 6. Bioinformatics Data”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+# Retrieving bioinformatics data
+
+## Downloading data with 'wget' and 'curl'
+
+### 'wget'
+Useful for quickly downloading files from command line 
+
+'wget' downloads to current directory
+
+'wget' can handle "http" (hypertext transfer protocol) and "ftp" (file transfer protocol)
+- Note: FTP preferable for large files 
+
+'wget' can download data *recursively* using option '--recursive' or '-r'
+- recursive option can be used to download the current page and pages linked to these pages (usually limited to 5 levels)
+- Recursive downloading useful or downloading all files of a cetaintype form a page
+
+### 'curl'
+useful for downloading files from commandline *and writes the file to stdout*
+- '-O <filename>' option can be used to specify the saved file name (otherwise it will be named based on remote host)
+	
+'curl' can use moer protocols:
+- http
+- ftp
+- sftp (secure FTP)
+- SCP (secure copy)
+
+## Rsync and secure copy (scp)
+'Rsync' - function used to download ALL files, including large files omitted by '.gitignore'
+- 'rsync source destination' 
+	- 'source' - the source of the files or directories to be copied
+	- 'destination' desination you'd like to copy files to
+	- 'source' and 'destination' can be remote using the format 'user@host:/path/to/directory/'
+```{example rsync}
+# [...] is a URL abbrviation, in youral code, use full URL for source/destination
+$ rsync -avz -e ssh zea_mays/data/ vinceb@[...]:/home/deborah/zea_mays/data
+building file list ... done
+zmaysA_R1.fastq
+zmaysA_R2.fastq
+zmaysB_R1.fastq
+zmaysB_R2.fastq
+zmaysC_R1.fastq
+zmaysC_R2.fastq
+sent 2861400 bytes  received 42 bytes  107978.94 bytes/sec
+total size is 8806085  speedup is 3.08 
+```
+	- traling slashes (~/data vs ~/data/) important in rsync
+		- trailing slash - copy the contents of the source directory (assuming destination directory exists)
+		- NO trailing slash - creates a local directory then populates with the source files
+		
+'scp' - secure copy; command to quickly copy a single file over SSH for taks where unix 'cp' would suffice but neesd to wokr over an SSH connection
+- works jsut like 'cp' copy command but uses host and path (user@host:/path/to/file notation)
+
+## SHA and MDA checksums
+checksum algorithms - ensure data integerity reported in hexadecimal format; MDA and SHA-1 are most common
+- checksums on files can be used to confirm that two verions of a file are the exact same 
+```{SHA checksum example}
+# run checksum on single file to compare to another
+$ echo "bioinformatics is fun" | shasum
+f9b70d0d1b0a55263f1b012adab6abf572e3030b  -
+$ echo "bioinformatic is fun" | shasum
+e7f33eedcfdc9aef8a9b4fec07e58f0cf292aa67  -
+
+# bulk checksum on multiple FASTQ files
+$ shasum data/*fastq > fastq_checksums.sha
+$ cat fastq_checksums.sha 524d9a057c51b1[...]d8b1cbe2eaf92c96a9    data/Csyrichta_TAGGACT_L008_R1_001.fastq
+d2940f444f00c7[...]4f9c9314ab7e1a1b16    data/Csyrichta_TAGGACT_L008_R1_002.fastq
+623a4ca571d572[...]1ec51b9ecd53d3aef6    data/Csyrichta_TAGGACT_L008_R1_003.fastq
+f0b3a4302daf7a[...]7bf1628dfcb07535bb    data/Csyrichta_TAGGACT_L008_R1_004.fastq
+53e2410863c36a[...]4c4c219966dd9a2fe5    data/Csyrichta_TAGGACT_L008_R1_005.fastq
+e4d0ccf541e90c[...]5db75a3bef8c88ede7    data/Csyrichta_TAGGACT_L008_R1_006.fastq
+
+# “use shasum’s check option (-c) to validate that these files match the original versions
+$ shasum -c fastq_checksums.sha
+data/Csyrichta_TAGGACT_L008_R1_001.fastq: OK
+data/Csyrichta_TAGGACT_L008_R1_002.fastq: OK
+data/Csyrichta_TAGGACT_L008_R1_003.fastq: OK
+data/Csyrichta_TAGGACT_L008_R1_004.fastq: OK
+data/Csyrichta_TAGGACT_L008_R1_005.fastq: OK
+data/Csyrichta_TAGGACT_L008_R1_006.fastq: FAILED
+shasum: WARNING: 1 computed checksum did NOT match
+
+## Looking for differences between data
+checksums tell if data differs, 'diff' tool tells eactly how they differ
+
+'diff' command reprots "hunks" of code that difer between versions i
+- 'diff' - unix diff command
+	- '-u' option - unified idff format
+- 'git diff' - git diff command
+```{diff command examples}
+$ diff -u gene-1.bed gene-2.bed
+--- gene-1.bed	2014-02-22 12:53:14.000000000 -0800 
++++ gene-2.bed	2015-03-10 01:55:01.000000000 -0700
+@@ -1,22 +1,19 @@ 
+ 1	6206197	6206270	GENE00000025907
+ 1	6223599	6223745	GENE00000025907 
+ 1	6227940	6228049	GENE00000025907
++1	6222341	6228319	GENE00000025907 
+ 1	6229959	6230073	GENE00000025907
+-1	6230003	6230005	GENE00000025907 
+ 1	6233961	6234087	GENE00000025907
+ 1	6234229	6234311	GENE00000025907
+ 1	6206227	6206270	GENE00000025907
+ 1	6227940	6228049	GENE00000025907
+ 1	6229959	6230073	GENE00000025907
+-1	6230003	6230073	GENE00000025907 
++1	6230133	6230191	GENE00000025907
+ 1	6233961	6234087	GENE00000025907
+ 1	6234229	6234399	GENE00000025907
+ 1	6238262	6238384	GENE00000025907
+-1	6214645	6214957	GENE00000025907
+ 1	6227940	6228049	GENE00000025907
+ 1	6229959	6230073	GENE00000025907
+-1	6230003	6230073	GENE00000025907
+ 1	6233961	6234087	GENE00000025907
+ 1	6234229	6234399	GENE00000025907
+-1	6238262	6238464	GENE00000025907
+1	6239952	6240378	GENE00000025907
+```
+
+# Compressing data and working with compressed data
+Most modern (well-written) bioinformatics programs can take compressed files as input (without need for first uncompressing)
+
+## 'gzip'
+two most common Unix compression systems: gzip,  bzip2
+- 'gzip' - compresses and decompresses data faster
+- 'bzip2' - higher compression ratio; usualy used for long-term data archieving
+```{example zipping using gzip program}
+# trimmer program takes gzipped input, processes it, then pipes it to the gzip to recompress streamed trimmer output
+$ trimmer in.fastq.gz | gzip > fastq.gz
+
+# gzip taking written file and compressing it
+$ ls
+in.fastq
+$ gzip in.fastq
+$ ls
+in.fastq.gz
+
+# gunzip to decompress written file and OVER WRITE orginal compressed file
+$ gunzip in.fastq.gz
+$ls
+in. fastq
+
+# gunzip to decompress written file and save both orginal compressed file and uncompressed file using -c option
+$ gzip -c in.fastq > in.fastq.gz
+$ gunzip -c in.fast.gz > duplicate_in.fastq
+
+# append uncompressed data to n existing gzipped file
+$ ls
+in.fastq.gz in2.fastq
+$ gzip -c in2.fastq >> in.fastq.gz
+$ gzip -c in2.fastq >> in.fastq.gz
+
+## Working with gzipped compressed files 
+many Unix bioinformatics tools can work with compressed files directly; examples
+- 'grep' can search for content in compressed files using 'zgrep'
+- 'cat' can print compressed files to stdout using 'zcat'
+- 'diff' can find differences using 'zdiff'
+- comannds that can't use compressed data can use 'zcat' as redirected input
+
+# Case study: reproducibly download
+"GRC" (Genome Reference Consortium) prefix is add to genomes.  GRCm38 is the mouse 38.  
+
+GRC genomes cna be downloaded from Ensembl using 'wget'
+
+Downloading GRCm38 from Ensembl (using abbreviated URL for example)
+```{downloading GRCm38 form ensembl}
+$ wget ftp://ftp.ensembl.org/[...]/Mus_musculus.GRCm38.74.dna.toplevel.fa.gz
+```
+
+Documenting download in README: 
+	Mouse (*Mus musculus*) reference genome version GRCm38 (Ensembl release 74) was downloaded on Sat Feb 22 21:24:42 PST 2014, using:
+
+    wget ftp://ftp.ensembl.org/[...]/Mus_musculus.GRCm38.74.dna.toplevel.fa.gz
+
+Can verify download by comparing downloaded file checksum with the stated checksum ensembl (Note: 'less' command is used to view (but not change) the contents of a text file one screen at a time):
+```{verifying download via checksum}
+# check all FASTA headers using regex and less command
+$ zgrep "^>" Mus_musculus.GRC.m38.74.dna.toplevel.fa.gz | less
+
+# use 'wget' to download the CHECKSUM for the genome in ensembl.  use 'sum' tule to verify the checksum value
+$ wget ftp://ftp.ensembl.org/pub/release-74/fasta/mus_musculus/dna/CHECKSUMS
+$ sum Mus_musculus.GRCm38.74.dna.toplevel.fa.gz
+53504 793314
+
+# also good practice to include SHA-1 sums for all important data in data README
+$ shasum Mus_musculus.GRCm38.74.dna.toplevel.fa.gz
+01c868e22a981[...]c2154c20ae7899c5f  Mus_musculus.GRCm38.74.dna.toplevel.fa.gz
+```
+
+Download accompanying GTF and its CHECKSUMS for genome
+```{downloading GTF and its checksum}
+$ wget ftp://ftp.ensembl.org/[...]/Mus_musculus.GRCm38.74.gtf.gz
+$ wget ftp://ftp.ensembl.org/[...]/CHECKSUMS
+
+# verify downloaded file checksum match the  CHECKSUMS file form Ensemebl
+```{GTF checksum verification}
+$ sum Mus_musculus.GRCm38.74.gtf.gz
+00985 15074
+$ shasum cf5bb5f8bda2803410bb04b708bff59cb575e379  Mus_musculus.GRCm38.74.gtf.gz
+```
+
+Example README based on case study:
+	
+	## Genome and Annotation Data
+
+	Mouse (*Mus musculus*) reference genome version GRCm38 (Ensembl
+	release 74) was downloaded on Sat Feb 22 21:24:42 PST 2014, using:
+
+    	wget ftp://ftp.ensembl.org/[...]/Mus_musculus.GRCm38.74.dna.toplevel.fa.gz
+
+	Gene annotation data (also Ensembl release 74) was downloaded from Ensembl on
+	Sat Feb 22 23:30:27 PST 2014, using:
+
+    	wget ftp://ftp.ensembl.org/[...]/Mus_musculus.GRCm38.74.gtf.gz
+
+	## SHA-1 Sums
+
+	 - `Mus_musculus.GRCm38.74.dna.toplevel.fa.gz`: 01c868e22a9815c[...]c2154c20ae7899c5f
+	 - `Mus_musculus.GRCm38.74.gtf.gz`: cf5bb5f8bda2803[...]708bff59cb575e379

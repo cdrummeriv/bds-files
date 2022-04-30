@@ -1,0 +1,461 @@
+---
+title: 05 Git for Scientists - Bioinformatics Data Skills - O'Reilly
+author: "Charles Drummer IV"
+date: "3/24/2022"
+output: html_document
+---
+“Part II. Prerequisites: Essential Skills for Getting Started with a Bioinformatics Project”
+
+“Chapter 5. Git for Scientists”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+
+# Why Git is Necessary in Bioinformatics Projects
+version control systems (VCS) are software engineering solutiosn for managing versions and collaborative work
+
+Git was developed to manage the Linux kernel
+
+*Git commit* - a snapshot or version of software
+
+## Git Allows You to Keep Snapshots of Your Project
+## Git Helps You Keep Track of Important Changes to Code
+## Git Helps Keep Software Organized and Availale After People Leave
+
+# Installing Git
+Homebrew is easiest way to install git on MacOSX.
+```{installing git with Homebrew}
+$ brew install git
+```
+
+# Basic Git: Creating Repositories, Tracking Files, and staging and Committing Changes
+Once installed, 'git' is the command and you interact with git using *subcommands*.  A git command would start with 'git <subcommand>'.
+
+## Git Setup: Telling Git Who You Are
+Give git your information
+```{username and email in git}
+$ git config --global user.name "Charles Drummer IV"
+$ git config --global user.email "cdrummeriv@gmail.com"
+
+# many git subcommands are colored, adding color to terminal using
+
+$ git config --global color.ui true
+```
+## git init and git clone: Creating Repositories
+First need to initialize a directory as a git *repository*
+
+*git repository* - a directory thats under version control; two primary ways to create a repository
+	- initializing a repository
+```{method 1: initialzing a repository}
+# change to the directory to convert
+$ cd ~/zmays-snps/
+
+# run 'git init' to inital repository
+$ git init
+Initialized empty Git repository in ~/zmays-snps/.git/
+
+# verify the .git/ directory was created 
+$ ls -a
+```
+	- cloning an existing repository
+```{method 2: cloning a repository}
+# change directory to location for clone if needed.
+git clone https://github.com/lh3/seqtk.git
+```
+Note: Initializing a repository (using 'git init') creates a hidden directory called *.git/* used for the version control (don't modify or remove)
+
+## Tracking files in Git: git add and git status part I
+Some files in a bioinformatics project shouldn't be tracked/synced (i.e. large data files, intermediate results, intermediate files created when command runs etc.)
+
+The 'check status' git status command reports files in repository
+  - describes the current state of your project repository: what’s changed, what’s ready to be included in the next commit, and what’s not being tracked.
+
+Git must be told which files to track once a repository with 'git add'
+```{git add command example}
+# add existing README files to git
+$ git add README data/README
+
+#Verifiying git add
+$ ls
+README   analysis data     scripts
+$ git status
+ On branch master
+
+ Initial commit
+
+ Changes to be committed:
+   (use "git rm --cached <file>..." to unstage)
+
+	new file:   README
+	
+	new file:   data/README
+ Untracked files:
+   (use "git add <file>..." to include in what will be committed)
+
+	data/seqs/
+```
+## Staging files in Git: git add and git status part II
+tracked vs staged files
+- *tracked* - a file that git knows exists using 'git add' command
+- *staged* - a file that git knows exists and its latest changes are ready to be included in the next commit using 'git add' command
+
+'git add' has two functions:
+- Alerting Git to start tracking untracked files (this also stages the
+current version of the file to be included in the next commit)
+- Staging changes made to an already tracked file (staged changes
+will be included in the next commit)
+
+After changing a tracked item, 'git status' will be modified to show that "changes not staged for commit" are found in the modified README file
+```{Tracked vs staged example}
+# modify home level README tio include text
+$ echo "Zea Mays SNP Calling Project" >> README.md
+
+# check the status of git tracked items 
+$ git status
+ On branch master
+
+ Initial commit
+
+ Changes to be committed:
+   (use "git rm --cached <file>..." to unstage)
+
+	new file:   README
+	new file:   data/README
+
+ Changes not staged for commit:
+   (use "git add <file>..." to update what will be committed)
+   (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   README
+
+ Untracked files:
+   (use "git add <file>..." to include in what will be committed)
+
+	data/seqs/
+```
+  - Note: a commit at this point wouldn't NOT include the changes 
+  - To add recent changes to next commit:
+```{staging recent modifications for next commit}
+# add the newly modified file to git tracking
+$ git add README.md
+
+# verify status change
+$ git status
+ On branch master
+
+ Initial commit
+
+ Changes to be committed:
+   (use "git rm --cached <file>..." to unstage)
+
+	new file:   README
+	new file:   data/README
+
+ Untracked files:
+   (use "git add <file>..." to include in what will be committed)
+
+	data/seqs/
+	notebook.md
+```
+## git commit: taking a snapshot of your project
+tracked and staged changes are submitted using 'git commit' 
+- The '-m' commit option displays the following quoted message
+- omitting the '-m' option may bring up a text editor for the option to wrote the message
+```{git commit}
+# 'git commit' of tracked and staged changes
+$ git commit -m "initial import" 
+ 2 files changed, 1 insertion(+)
+ create mode 100644 README
+ create mode 100644 data/README
+ 
+ # 'git commit' of ALL changes, regardless of whether they were specifically/individually staged with 'git add' using the '-a' "all" changes option
+$ git commit -a -m "initial import" 
+```
+- *clean* directory - a working directory with no tracked files differ from the last committed version
+- *messy* directory - a working directory with unstaged changes 
+
+## Seeing file differences: git diff
+'git diff' without argument returns differences between files in working directory and what's staged, generates a "unified diff" 
+- added lines marked in green
+- removed lines marked in red
+- different files
+  - a vs b designations 
+  - '---' indicates original
+  - '+++' indicates changed version
+  - '@@ ... @@' indicated the changed hunk (hunk - diff's term for large changed block).  Indicates which line changes start on 
+  - lines with no indicator show text that isn't change; lines with '+' show lines that were added; line with '-' show lines that were removed 
+```{git diff without argument}
+# adding file to README.md then running 'git diff'
+$ echo "Project started 2022-03-27" >> README
+$ git diff
+diff --git a/README b/README
+index 5483cfd..ba8d7fc 100644
+--- a/README # this and following line show the two versions of file that's changed
++++ b/README
+@@ -1 +1,2 @@ # this and following line show the "changed hunk"
+ Zea Mays SNP Calling Project
++Project started 2013-01-03 # this line shows the actual changes
+
+
+```
+- '--staged' option shows diff between last commit and staged items
+```{git diff staged option}
+$ git diff --staged
+diff --git a/README b/README
+“$ git diff --staged
+diff --git a/README b/README
+index 5483cfd..ba8d7fc 100644
+--- a/README
++++ b/README
+@@ -1 +1,2 @@
+ Zea Mays SNP Calling Project
++Project started 2013-01-03
+```
+## Seeing your commit history: git log
+'git log' used to visualize chain of commits
+- generates a "SHA-1 checksum (or hash)" which is a hashed unique ID for each commit in your repository
+```{git log}
+$ git log
+commit 4a0c577b20dce416293b2a57f178ee695da721f9 (HEAD -> master) # 
+Author: Charles Drummer IV <cdrummeriv@gmail.com>
+Date:   Sat Mar 26 12:47:23 2022 -0400
+
+    initial import
+    
+# commit all changes so far 
+$ git commit -a -m "added information about project ot README.md"
+[master 94e2365] added information about project to README
+ 1 file changed, 1 insertion(+)
+
+# check git log after commit
+$ git log 
+commit 94e2365dd66701a35629d29173d640fdae32fa5c
+Author: Vince Buffalo <vsbuffaloAAAAAA@gmail.com>
+Date:   Tue Sep 24 00:02:11 2013 -0700
+
+    added information about project to README
+
+commit 3d7ffa6f0276e607dcd94e18d26d21de2d96a460
+Author: Vince Buffalo <vsbuffaloAAAAAA@gmail.com>
+Date:   Mon Sep 23 23:55:08 2013 -0700
+
+    initial import
+```
+
+## Moving and removing files: git mv and git rm
+Once a file/folder is tracked with git, need to use git version of move 'git mv' and remove 'git rm'
+
+## Telling git what to ignore: .gitignore
+'gitignore' is a file made in you're project directory
+
+Types of files to exclude from git
+- large files (Example: FASTQ files)
+- intermediate files (Example: SAM/BAM files)
+- Text editor temporary files 
+- Temporary code files
+
+file types to be excluced (example: FASTQ files) can be added to this exclusion file
+
+When commited, these filetypes wil be ignored in git
+
+```{adding all fastq files to .gitignore}
+# add placeholder fastq files for this example in data/seqs/ directory
+$ cd ~/zmays-snps/data/seqs/
+$ touch fake1.fastq fake2.fastq fake3.fastq
+
+# create a .gitignore file in the project folder then add the fastq file wildcard
+$ cd ~/zmays-snps/
+$ touch .gitignore
+$ echo "data/seqs/*.fastq" >> .gitignore
+
+#verify the ignore file was created and text added
+$ cat .gitignore
+data/seqs/*.fastq
+
+$ git status
+On branch master
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.DS_Store
+	.gitignore
+	zmays-snps/
+
+	nothing added to commit but untracked files present (use "git add" to track)
+
+# stage then commit the .gitignore file 
+$ git add .gitignore
+$ git commit -m "added .gitignore"
+[master 8f327a6] added .gitignore
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .gitignore
+ 
+ ```
+ Note: *global .gitignore* files cab be created to universally ignore a file across all projects 
+ - a global *.gitignore* file created in *~/.gitignore_global* can be created and Git then configured to use
+```{creating global .gitignore}
+git config --global core.excludesfile ~/.gitignore_global 
+```
+
+## Undoing a stage: git reset
+'git reset' will "unstage" a file/folder
+
+reset roles back to the vereion at 'HEAD' ('HEAD' - alias or pointer to the last commit on the currrent branch)
+```{git reset example}
+
+# create a change to README
+
+$ echo "TODO: ask sequencing center about adapters" >> README.md
+$ git add README.md
+$ git status
+ On branch master
+ Changes to be committed:
+   (use "git reset HEAD <file>..." to unstage)
+
+	new file:   README.md”
+
+# unstage above change
+$ git reset HEAD README.md
+$ git status
+ On branch master
+ Changes not staged for commit:
+   (use "git add <file>..." to update what will be committed)
+   (use "git checkout -- <file>..." to discard changes in working
+directory)
+
+	modified:   README.md
+```
+
+# Collaborating with git: git remotes, git push, git pull
+*remote repository* - a version of your repository hosted elsewhere
+
+remote repositories first require configureation of local repository to work with remote repositories
+
+*pull* - retrieving commits from a remote repository
+
+*push* - sending commits to a remote repository
+
+Workflow for sharing Git commits with collaborators
+1. “You create a shared central repository on a server that both you and your collaborator have access to.
+2. You push your project’s initial commits to this repository (seen in (a) in Figure 5-3).
+3. Your collaborator then retrieves your initial work by cloning this central repository (seen in (b) in Figure 5-3).
+4. Then, your collaborator makes her changes to the project, commits them to her local repository, and then pushes these commits to the central repository (seen in (a) in Figure 5-4).
+5. You then pull in the commits your collaborator pushed to the central repository (seen in (b) in Figure 5-4). The commit history of your project will be a mix of both you and your collaborator’s commits.
+Note: *merge conflicts* can occur when editing the same section and have to be manually reconciled. 
+
+## Creating a shared central repository with GitHub
+on GitHub, find the "Create a New Repository" page
+
+## Authenticating with Git Remote
+Git uses SSH keys to authenicate you
+
+SSH keys have both a public (share with collaborators) and private (KEEP SECRET) version 
+
+SSH config files store details about hosts you frequently use
+
+SSH keys are generated using the 'ssh-keygen' command.  You can find teh genreated keys at /Users/username/.ssh/id_rsa (if files are hidden on Mac OSX press 'Command+Shift+.')
+- Note: just press 'return' to create key without file or passphrases when prompted
+```{generating SSH keys}
+$ ssh-keygen -b 2048
+Generating public/private rsa key pair.
+Enter file in which to save the key (/Users/username/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /Users/username/.ssh/id_rsa.
+Your public key has been saved in /Users/username/.ssh/id_rsa.pub.
+The key fingerprint is:
+e1:1e:3d:01:e1:a3:ed:2b:6b:fe:c1:8e:73:7f:1f:f0
+The key's randomart image is:
++--[ RSA 2048]----+
+|.o... ...        |
+|  .  .   o       |
+| .        *      |
+|  .      o +     |
+| .      S .      |
+|  o    . E       |
+|   +    .        |
+|oo+..  . .       |
+|+=oo... o.       |
++-----------------+
+
+# try your SSH public key
+$ ssh -T git@github.com
+The authenticity of host 'github.com (140.82.112.3)' can't be established.
+ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
+Hi cdrummeriv! You've successfully authenticated, but GitHub does not provide shell access.
+
+## Connecting with Git remotes: git remote
+Once GitHub is connected, you need to configure the local repository to use the remote GitHub repository as a remote repository with 'git remote add'
+
+For the template '“git remote add origin git@github.com:username/zmays-snps.git':
+- 'git remote add' - the Git command
+- 'origin' - argument 1, a given name for the Git repository; by convention *origin* is the name of your primary remote repository
+- 'git@github.com:username/zmays-snps.git' - the address of the Git repositiory 
+
+```{connecting local to GitHub repository with git remote add}
+$ cd ~/zmays-snaps/ # change directory to the one to be added to GitHub
+$ git remote add origin git@github.com:cdrummeriv/zmays-snps.git
+# verify local Git repository knows about the remote repository
+$ git remote -v
+origin	git@github.com:username/zmays-snps.git (fetch)
+origin	git@github.com:username/zmays-snps.git (push)
+
+```
+## Pushing commits to a remote repository with git push
+' git push <remote-name> <branch>' 
+- 'remote-name' - the name given to the local repository (we gave the name "origin" by convention)
+- 'branch' - the name given to the remote git repository (we gave the name "master" by convention)
+```{git push example}
+$ git push origin master
+Enumerating objects: 11, done.
+Counting objects: 100% (11/11), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (11/11), 969 bytes | 161.00 KiB/s, done.
+Total 11 (delta 0), reused 0 (delta 0), pack-reused 0
+To github.com:cdrummeriv/zmays-snps.git
+* [new branch]      master -> master
+```
+
+## Pulling commits from a remote repository with git pull
+'git clone' creates a local repository of anothers Git project
+'git clone <remote-repository-address> <local-repository-clone>'
+```{cloning Git repository for collaboration}
+# change directory to desired local location
+$ cd
+
+# clone repository 
+$ git clone git@github.com:cdrummeriv/zmays-snps.git zmays-snps-collaboration
+
+# change file in original repository
+$ echo "Samples expected from sequencing core 2023-01-10" >> README.md
+$ git commit -a -m "added information about samples
+
+(base) cdrummeriv@Charless-MacBook-Pro zmays-snps % git commit -a -m "added information about sample"
+[master e5c4955] added information about sample
+1 file changed, 2 insertions(+)
+$ git push origin master
+
+# verify changes pushed to collaborator repository
+$ cd ~/zmays-snps-collaboration
+$ git log --pretty=oneline --abbrev-commit
+8f327a6 (HEAD -> master, origin/master, origin/HEAD) added .gitignore
+a625ea8 added information about project ot README.md
+4a0c577 initial import
+```
+
+## Merge conflicts (COME BACK FOR NOTES LATER)
+
+## More GitHub workflows: forking and pull requests
+
+*forking repositories* - copying a remote repository to your own repositiory; changes pushed from local repository do not interfere with the main owners project
+
+*pull request* sending a request to the main project owner to incorporate your changes to their mainr project
+
+# Using Git to make lifer easier: working with past commits (COME BACK FOR NOTES LATER)

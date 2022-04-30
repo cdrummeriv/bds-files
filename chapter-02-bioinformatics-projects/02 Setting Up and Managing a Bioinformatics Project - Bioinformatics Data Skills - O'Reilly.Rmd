@@ -1,0 +1,162 @@
+---
+title: 02 Setting Up and Managing a Bioinformatics Project - Bioinformatics Data Skills - O'Reilly
+author: "Charles Drummer IV"
+date: "3/21/2022"
+output: html_document
+---
+“Part II. Prerequisites: Essential Skills for Getting Started with a Bioinformatics Project”
+
+Excerpt From
+Bioinformatics Data Skills
+Vince Buffalo
+https://books.apple.com/us/book/bioinformatics-data-skills/id1025338879
+This material may be protected by copyright.
+
+- Every bioinformatics project begins with an empty project directory
+
+# Project directories and directory structures
+- all new projects requires 
+  - create project directory with mkdir
+  - create an empty README file
+- all data files, notes,  scripts etc for a project should exist in the same directory
+  - data directory should hold all raw and intermediate data
+  - script directory for project-wide scripts; create additional directories if scripts have parts (python modules)
+  - analysis directory for "steps" in a larger analysis (Example raw data QC, aligner output, final data output)
+  
+- when refering to data in other directories in a project, use relative paths to ensure you are using files from the same parent project 
+- absolute paths makes you work/data less portable (reply on thee usr accounts and directories) and thus less reproducible 
+
+# Project documentation
+Examples of what to document in the README file:
+- Methods and workflows (including full ccommand-lines)
+- Origin of all data in project directory 
+  - website and/or person you obtained data from
+  - analysis from collaboratores
+  - genome annotation, reference  geneome etc.
+- Date data downloaded/acquired
+- Data version
+- How data was downloaded
+- Version of software
+
+Each project directory should have a README file.  Example “data/README file would contain metadata about your data files in the data/ directory”
+
+```{example folder  for zea mays SNPs project}
+$ mkdir zmays-snps # makes root directory for the project
+$ cd zmays-snps # change to the new directory
+$ mkdir data # makes subdirectory "data" in the root, to hold all raw and 
+$ mkdir data/seqs scripts analysis # makes subdirectory "script analysis" in "data" subdirectory
+$ ls -l  #  view content of directory
+```
+# Organizing data to automate file processing tasks
+## Shell expansion
+- *shell expansion* - when your shell expands text for you so you don’t have to type it out (Example: ~ expands to home directory)
+- *brace expansion* - a type of shell expansion used to quickly create subdirectories
+- *globbing* - wildcard expansion used to match files or directories with common names names 
+```{shell and brace expansion for project directory structure}
+# brace expansion to auto-generate directories
+$ mkdir -p zmays-snps/{data/seqs,scripts,analysis}
+
+# brace expansion to auto-generate files
+$ cd data
+$ touch seqs/zmays{A,B,C}_R{1,2}.fastq
+$ ls seqs/”
+zmaysA_R1.fastq zmaysB_R1.fastq zmaysC_R1.fastq
+zmaysA_R2.fastq zmaysB_R2.fastq zmaysC_R2.fastq
+
+# shell expansion to find files with wildcards
+$ ls seqs/zmaysB*
+zmaysB_R1.fastq zmaysB_R2.fastq”
+
+# shell expansion to find files names AND extensions only with wildcards
+$ zmaysB*fastq # * wildcard expands to strings after 
+$ zmaysB_R?.fastq # ? wildcard expands to only a single character in that position
+
+# shell expansion to find a range of files names where "wildcard" "[ ]" looks only for ALPHABETIC CHARACTERS starting with certain letters 
+$ ls zmays[AB]_R1.fastq # wildcard looking for A AND B
+zmaysA_R1.fastq zmaysB_R1.fastq
+$ ls zmays[A-B]_R1.fastq # wildcard looking for A THROUGH B
+zmaysA_R1.fastq zmaysB_R1.fastq
+
+# shell expansion to find a range of files names where "wildcard" "[ ]" looks only for NUMERIC CHARACTERS starting with certain numbers (doesn't consider if the file doesn't exist)
+
+$ ls snps_{10..13}.txt # finds files with given number range.  Remember to use leading zeros so files sort corectly
+snps_10.txt snps_11.txt snps_12.txt snps_13.txt
+
+```
+# Markdown for Project Notebooks
+- Project notebooks are bioinformatics equivalent to lab notebook, should include:
+  - information about the chronology of your computational work
+  - steps you’ve taken
+  - information about why you’ve made decisions
+  - all pertinent information to reproduce your work
+- Project notebooks should be written in "plain text" using Markdown for basic formatting
+
+## Markdown Formatting Basics
+- Note: John Gruber’s full markdown syntax specification is available on his website <https://daringfireball.net/projects/markdown/syntax>
+- “*emphasis* - emphasis
+- **bold** - bold
+- `inline code` - inline code
+- <http://website.com/link> - Hyperlink to http://website.com/link
+- [link text](http://website.com/link) - 
+Hyperlink to http://website.com/link, with text “link text”
+- ![alt text](path/to/figure.png)” - Image with alternative text "alt text"
+- Headers (markdown supports up to 6)
+  - # Header level 1
+  - ## HEader level 2
+  - ### Header Level 3
+- Lists (unordered) - new line with dash, asterist or plus
+- Lists (ordered) - new line with numbers
+- code block - new line with a "tab" indent
+  - can be used to place a block within a list item with 2x "tab" indent
+```{Example project notebook entry using markdown}
+# *Zea Mays* SNP Calling
+
+We sequenced three lines of *zea mays*, using paired-end
+sequencing. This sequencing was done by our sequencing core and we
+received the data on 2013-05-10. Each variety should have **two**
+sequences files, with suffixes `_R1.fastq` and `_R2.fastq`, indicating
+which member of the pair it is.
+
+## Sequencing Files
+
+All raw FASTQ sequences are in `data/seqs/`:
+
+    $ find data/seqs -name "*.fastq"
+    data/seqs/zmaysA_R1.fastq
+    data/seqs/zmaysA_R2.fastq
+    data/seqs/zmaysB_R1.fastq
+    data/seqs/zmaysB_R2.fastq
+    data/seqs/zmaysC_R1.fastq
+    data/seqs/zmaysC_R2.fastq
+
+## Quality Control Steps
+
+After the sequencing data was received, our first stage of analysis
+was to ensure the sequences were high quality. We ran each of the
+three lines' two paired-end FASTQ files through a quality diagnostic
+and control pipeline. Our planned pipeline is:
+
+1. Create base quality diagnostic graphs.
+2. Check reads for adapter sequences.
+3. Trim adapter sequences.
+4. Trim poor quality bases.
+
+Recommended trimming programs:
+
+ - Trimmomatic
+ - Scythe
+
+```
+## Using Pandoc to render markdown to HTML
+- Pandoc is a document converter <https://pandoc.org>
+  - '-- from markdown' - specifies input format
+  - '-- to html' - specifies ouput format
+  - 'argument 1' - specifies input_name.format and output_name.format
+```{Pandoc installation and execution}
+# installing pandoc with Homebrew
+brew install pandoc
+brew install librsvg python homebrew/cask/basictex # installs common pandoc plug-ins 
+
+# basic pandoc conversion code
+$ pandoc --from markdown --to html notebook.md > output.html
+```
