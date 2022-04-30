@@ -33,9 +33,10 @@ Ranges are read based on the 5'-3' sequence:
 - forward(+) strands are read based on the "top" foward strand left to right
 - reverse(-) strands are read based on the "bottom" reverse strand, right to left
 
-There are 2 types of range systems in bioinformatics: - *0-based* coordinate systems with *half closed, half open intervals*
-	- first base in a sequence is at position 0, the last base's position = the legnth of the sequence - 1
-	- half closed half open written "[start, end)"
+There are 2 types of range systems in bioinformatics:
+- *0-based* coordinate systems with *half closed, half open intervals*
+  - first base in a sequence is at position 0, the last base's position = the legnth of the sequence - 1
+  - half closed half open written "[start, end)"
 		- brakets: indicates that a position is  *included* in the range (also known as "closed on this end")
 		- parenthesis: indicates that a position is *excluded* in the range (interval is "open on this end")
 - *1-based* coordinate systems with *closed intervals*
@@ -47,7 +48,7 @@ There are 2 types of range systems in bioinformatics: - *0-based* coordinate sys
 	- Note: 0-base systems allow for widths of 0
 	- Useful for representing features "between" bases (i.e. restriction enzyme cut sights)
 - 1-base" 'end - start + 1'
-	- Note: 1-base systems lowester possible width is 1
+	- Note: 1-base systems lowest possible width is 1
 	
 Range of common bioinformatic formats
 - BED: 0-based
@@ -60,16 +61,15 @@ Range of common bioinformatic formats
 - Genebank/EMBL Feature Tables: 1-based
 
 ## Strand
-Most range formats (except BLAST) specify range cooridinates *on the forward strand* of the reference sequence 
+Most range formats (except BLAST) specify range coordinates *on the forward strand* of the reference sequence 
 - mRNA transcripts for forward strand read same as the reference sequence
 - mRNA transcripts for reverse strand read same as the REVERSE COMPLEMENT to the reference sequence
 
 Strand matters in RNAseq aligned reads
 
 # An interactive introduction to range data with GenomicRanges
-
 ## Installing and working with Bioconductor packages
-*bioconductor* - an open sorce software project that creates R bioinformatitcs packages and serves as as repository for them.  Common packages:
+*bioconductor* - an open sorce software project that creates R bioinformatics packages and serves as as repository for them.  Common packages:
 - GenomicRanges: used to represent and work with genomic ranges
 - GenomicFeatures: used to represent and work with ranges that represent gene models and other features of a genome (genes, exons, UTRs, transcripts etc)
 - Biostrings and BSgenome: used for manipulating sequence data in R
@@ -94,12 +94,16 @@ BiocManager::install(c("GenomicFeatures", "GenomicRanges", "GenomicFeatures", "B
 IRange is package that creates 'IRange objects' with two basic (start, end)
 ```{loading IRanges and creating an object}
 > library(IRanges)
+# creating ranges by specifying start and end
 > rng <- IRanges(start=4,end=13)
-# create ranges by specifying width with start or end positoin
+
+# create ranges by specifying width with start or end position
 > IRanges(start=4,width=3)
 > IRanges(end=5,width=5)
+
 # using vectors to generate multiple ranges
 > x<-IRanges(start=c(4,7,2,20), end=c(13,7,5,23))
+
 # start, end and width positions can be called 
 > start(x)
 > end(x)
@@ -158,7 +162,6 @@ Gaps function returns the gaps between reduced ranges
 ```{gaps function}
 > gaps(alns)
 ```
-
 Other comparisons:
 - 'intersect(a,b)' - shows only the part of ranges that overlap
 - 'setdiff(a,b)' - shows portion of  'a' that isn't intersect with 'b'
